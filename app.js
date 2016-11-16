@@ -8,6 +8,11 @@ app.config(function($routeProvider) {
             controller: "UsersController",
             controllerAs: "usersCtrl"
         })
+        .when("/users/:id/edit", {
+            templateUrl: "templates/edit-user.html",
+            controller: "EditUserController",
+            controllerAs: "editUserCtrl"
+        })
         .otherwise({
             redirectTo: "/users"
         });
@@ -44,6 +49,37 @@ app.controller("UsersController", function($http) {
             $("#add-user-modal").modal("hide");
         }).error(function() {
             alert("Error saving user");
+        });
+    }
+});
+
+app.controller("EditUserController", function($http, $location, $routeParams) {
+    var vm = this;
+
+    //Pull specific user and insert into edit form
+    $http({
+        method: "GET",
+        url: "http://localhost:3000/users/" + $routeParams.id + "/edit"
+    }).success(function(user) {
+        vm.user = user;
+    }).error(function() {
+        alert("Error getting specific user");
+    });
+
+    //Capture submit event, prevent default, and update user server-side
+    vm.submitEdits = function(event) {
+        event.preventDefault();
+
+        $http({
+            method: "PUT",
+            url: "http://localhost:3000/users/" + $routeParams.id,
+            data: {
+                user: vm.user
+            }
+        }).success(function() {
+            $location.path("/users");
+        }).error(function() {
+            alert("Error updating user");
         });
     }
 });
